@@ -1,9 +1,12 @@
-const db = require("../db_connect");
+const pool = require("../db_connect");
+
+const moment = require("moment"); // Nhập thư viện moment
 
 // Lấy danh sách các bộ phim
 exports.getMovies = async (req, res) => {
   try {
-    const [movies] = await db.query("SELECT * FROM movies");
+    const [movies] = await pool.pool.execute("SELECT * FROM movie");
+    console.log("movies", movies);
     res.json(movies);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch movies" });
@@ -26,24 +29,34 @@ exports.addMovie = async (req, res) => {
     trailer,
   } = req.body;
 
+  // Kiểm tra và thay thế giá trị undefined bằng null
+  const movieData = [
+    title || null,
+    director || null,
+    cast || null,
+    genre || null,
+    release_date || null,
+    duration || null,
+    language || null,
+    rating || null,
+    description || null,
+    poster || null,
+    trailer || null,
+  ];
+
+  console.log(req.body); // In ra để kiểm tra dữ liệu
+
   try {
-    const sql = `INSERT INTO movies (title, director, cast, genre, release_date, duration, language, rating, description, poster, trailer)
+    const sql = `INSERT INTO movie (title, director, cast, genre, release_date, duration, language, rating, description, poster, trailer)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-    await db.query(sql, [
-      title,
-      director,
-      cast,
-      genre,
-      release_date,
-      duration,
-      language,
-      rating,
-      description,
-      poster,
-      trailer,
-    ]);
-    res.status(201).json({ message: "Movie added successfully" });
+
+    // Sử dụng pool.execute() để thực hiện câu lệnh SQL
+    await pool.pool.execute(sql, movieData);
+    const [result, field] = await pool.pool.execute(`select * from movie`);
+    console.log("result", result);
+    res.status(201).json({ message: "Movie added successfully", data: result });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: "Failed to add movie" });
   }
 };
@@ -51,18 +64,18 @@ exports.addMovie = async (req, res) => {
 // Xóa một bộ phim
 exports.deleteMovie = async (req, res) => {
   const { id } = req.params;
-
+  console.log(id);
   try {
-    await db.query("DELETE FROM movies WHERE id = ?", [id]);
+    await pool.pool.execute("DELETE FROM movie WHERE movie_id = ?", [id]);
     res.status(200).json({ message: "Movie deleted successfully" });
   } catch (err) {
     res.status(500).json({ error: "Failed to delete movie" });
   }
 };
 
-// Cập nhật thông tin một bộ phim
 exports.updateMovie = async (req, res) => {
   const { id } = req.params;
+  console.log("id", id);
   const {
     title,
     director,
@@ -76,15 +89,18 @@ exports.updateMovie = async (req, res) => {
     poster,
     trailer,
   } = req.body;
-
+  console.log(req.body);
+  // Chuyển đổi định dạng ngày sử dụng moment
+  const formattedReleaseDate = moment(release_date).format("YYYY-MM-DD"); // Định dạng là YYYY-MM-DD
+  console.log(formattedReleaseDate);
   try {
-    const sql = `UPDATE movies SET title = ?, director = ?, cast = ?, genre = ?, release_date = ?, duration = ?, language = ?, rating = ?, description = ?, poster = ?, trailer = ? WHERE id = ?`;
-    await db.query(sql, [
+    const sql = `UPDATE movie SET title = ?, director = ?, cast = ?, genre = ?, release_date = ?, duration = ?, language = ?, rating = ?, description = ?, poster = ?, trailer = ? WHERE movie_id = ?`;
+    await pool.pool.execute(sql, [
       title,
       director,
       cast,
       genre,
-      release_date,
+      formattedReleaseDate, // Sử dụng ngày đã chuyển đổi
       duration,
       language,
       rating,
@@ -95,6 +111,7 @@ exports.updateMovie = async (req, res) => {
     ]);
     res.status(200).json({ message: "Movie updated successfully" });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: "Failed to update movie" });
   }
 };
@@ -104,7 +121,7 @@ exports.LoginAdmin = async (req, res) => {
 
   try {
     // Kiểm tra xem người dùng có tồn tại không
-    const [users] = await db.pool.query(
+    const [users] = await pool.pool.query(
       "SELECT * FROM users WHERE username = ? AND password = ?",
       [username, password]
     );
@@ -133,13 +150,13 @@ exports.LoginAdmin = async (req, res) => {
 };
 
 exports.RegisterAdmin = async (req, res) => {
-  const { username, password, user_id } = req.body;
-
+  const { username, password, user_id, phoneNo, email } = req.body;
+  console.log(req.body);
   try {
     // Kiểm tra xem người dùng đã tồn tại hay chưa
-    const [existingUser] = await db.pool.query(
-      "SELECT * FROM users WHERE username = ? OR user_id = ?",
-      [username, user_id]
+    const [existingUser] = await pool.pool.query(
+      "SELECT * FROM users WHERE username = ? ",
+      [username]
     );
 
     if (existingUser.length > 0) {
@@ -150,9 +167,9 @@ exports.RegisterAdmin = async (req, res) => {
     const status = user_id === "1333333a-d85e-4f7c-91b3-2beeb7db4172" ? 1 : 0;
 
     // Thực hiện câu truy vấn để thêm người dùng vào cơ sở dữ liệu
-    const [result] = await db.pool.query(
+    const [result] = await pool.pool.query(
       "INSERT INTO users (user_id,username, password,email,phone_no,timer, status) VALUES (?, ?,?,?,?, NOW(), ?)",
-      [username, password, user_id, status]
+      [user_id, username, password, email, phoneNo, status]
     );
 
     // Trả về phản hồi thành công
@@ -163,5 +180,60 @@ exports.RegisterAdmin = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to register user" });
+  }
+};
+exports.getUsers = async (req, res) => {
+  try {
+    const [users] = await pool.pool.execute("SELECT * FROM users");
+    console.log("movies", users);
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch movies" });
+  }
+};
+
+exports.getBookings = async (req, res) => {
+  try {
+    const [bookingUser] = await pool.pool.execute("SELECT * FROM bookingUser");
+    console.log("bookingUser", bookingUser);
+    res.json(bookingUser);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch movies" });
+  }
+};
+
+// Thêm đặt vé mới
+exports.addBooking = async (req, res) => {
+  const { bookingInfo, dayOfWeek, chooseSeat, day } = req.body;
+  console.log(req.body);
+  const sql =
+    "INSERT INTO bookingUser (name, email, phone_number, showtime, payment_method, date, day_of_week, seat_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+  try {
+    const [results] = await pool.pool.query(sql, [
+      bookingInfo.name,
+      bookingInfo.email,
+      bookingInfo.phone,
+      bookingInfo.time,
+      bookingInfo.payment,
+      day,
+      dayOfWeek,
+      chooseSeat,
+    ]);
+
+    res.status(201).json({
+      id: results.insertId,
+      name: bookingInfo.name,
+      email: bookingInfo.email,
+      phone_number: bookingInfo.phone,
+      showtime: bookingInfo.time,
+      payment_method: bookingInfo.payment,
+      date: day,
+      day_of_week: dayOfWeek,
+      seat_number: chooseSeat,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: err.message });
   }
 };

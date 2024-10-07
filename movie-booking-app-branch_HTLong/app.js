@@ -18,7 +18,7 @@ const { ALL } = require("dns");
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
+app.use(cors({ credentials: true, origin: "*" }));
 
 //test function
 app.get("/test", (req, res) => {
@@ -112,7 +112,7 @@ app.post("/login", async (req, res, next) => {
     const conn = await db_conn.pool.getConnection();
 
     // Xây dựng câu truy vấn tìm kiếm
-    let sql_search = "SELECT password, user_id, status FROM Users WHERE ";
+    let sql_search = "SELECT password, user_id, status FROM users WHERE ";
     if (validator.validate(username)) {
       sql_search += "email = ?";
     } else {
@@ -443,7 +443,7 @@ app.get("/search_films", async (req, res) => {
   let params = [];
 
   let sql_search =
-    'WITH Paging AS ( SELECT m.movie_id, m.title, m.director, m.cast, m.description, DATE_FORMAT(m.release_date, "%Y-%m-%d") AS release_date, m.duration, m.poster, ROW_NUMBER() OVER (ORDER BY movie_id) AS RowNum FROM movie m INNER JOIN Screening s ON m.movie_id=s.movie_id';
+    'WITH Paging AS ( SELECT m.movie_id, m.title, m.director, m.cast, m.description, DATE_FORMAT(m.release_date, "%Y-%m-%d") AS release_date, m.duration, m.poster, ROW_NUMBER() OVER (ORDER BY movie_id) AS RowNum FROM movie m INNER JOIN screening s ON m.movie_id=s.movie_id';
   if (typeof req.body.search != "undefined") {
     sql_search += " WHERE m.title REGEXP ?";
     const search = "^" + req.body.search;
@@ -541,7 +541,7 @@ app.get("/schedule", async (req, res) => {
     if (typeof req.query.id !== "undefined") {
       const movie_id = req.query.id;
       const sql_search =
-        'SELECT screening_id, movie_id, DATE_FORMAT(time_start, "%Y-%m-%d") AS time_start_d, DATE_FORMAT(time_start, "%H:%i") as time_start_t FROM Screening WHERE movie_id = ?';
+        'SELECT screening_id, movie_id, DATE_FORMAT(time_start, "%Y-%m-%d") AS time_start_d, DATE_FORMAT(time_start, "%H:%i") as time_start_t FROM screening WHERE movie_id = ?';
       const query_one_film = mysql.format(sql_search, [movie_id]);
 
       const conn = await db_conn.pool.getConnection();
@@ -553,7 +553,7 @@ app.get("/schedule", async (req, res) => {
       }
     } else {
       const sql_search =
-        'SELECT s.screening_id, DATE_FORMAT(s.time_start, "%Y-%m-%d") AS time_start_d, DATE_FORMAT(s.time_start, "%H:%i") as time_start_t, s.price_id, m.title, m.rating, m.duration FROM Screening s INNER JOIN movie m ON m.movie_id = s.movie_id';
+        'SELECT s.screening_id, DATE_FORMAT(s.time_start, "%Y-%m-%d") AS time_start_d, DATE_FORMAT(s.time_start, "%H:%i") as time_start_t, s.price_id, m.title, m.rating, m.duration FROM screening s INNER JOIN movie m ON m.movie_id = s.movie_id';
 
       const conn = await db_conn.pool.getConnection();
       try {
@@ -584,7 +584,7 @@ app.get("/seatLayout", async (req, res, next) => {
       [screening_id]
     );
     const allSeat_query = mysql.format(
-      "SELECT seat_id, row, number, vip FROM Seat s INNER JOIN Screening sc ON s.room_id = sc.room_id WHERE sc.screening_id = ?",
+      "SELECT seat_id, row, number, vip FROM Seat s INNER JOIN screening sc ON s.room_id = sc.room_id WHERE sc.screening_id = ?",
       [screening_id]
     );
 
@@ -640,7 +640,7 @@ app.post("/booking", async (req, res, next) => {
   const booking_query = mysql.format(booking_insert, input);
   const reservation_query = mysql.format(reservation_check, search);
   const price_query = mysql.format(
-    "SELECT pr.price_amt FROM Screening sr INNER JOIN Price pr ON sr.price_id = pr.price_id WHERE screening_id = ?",
+    "SELECT pr.price_amt FROM screening sr INNER JOIN Price pr ON sr.price_id = pr.price_id WHERE screening_id = ?",
     [screening_id]
   );
 

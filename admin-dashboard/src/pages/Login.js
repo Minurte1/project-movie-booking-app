@@ -23,15 +23,17 @@ const Login = () => {
     setErrorMessage("");
 
     try {
-      const response = await axios.post("http://localhost:5000/login", {
-        username,
-        password,
-      });
+      const response = await axios.post(
+        "http://localhost:5000/api/login/admin",
+        {
+          username,
+          password,
+        }
+      );
 
       console.log(response.data);
-      if (response.status === 200) {
-        const { access_token } = JSON.parse(response.data.user_id);
-        localStorage.setItem("access_token", access_token);
+      if (response.data.message == "Login successful!") {
+        localStorage.setItem("access_token", response.data.user_id);
         navigate("/admin");
       }
     } catch (error) {

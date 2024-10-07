@@ -1,6 +1,25 @@
-import React, { useState } from "react";
-import { TextField, Button, Grid, Box } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import {
+  TextField,
+  Button,
+  Grid,
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TableContainer,
+  Container,
+} from "@mui/material";
 import axios from "axios";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 
 const MovieManager = () => {
   const [formData, setFormData] = useState({
@@ -14,10 +33,68 @@ const MovieManager = () => {
     rating: "",
     description: "",
     trailer: "",
+    poster: "",
+    genre: "",
   });
-  const [poster, setPoster] = useState(null);
 
-  // Hàm xử lý thay đổi giá trị input
+  const [movies, setMovies] = useState([]);
+  const [editingMovieId, setEditingMovieId] = useState(null); // ID của phim đang chỉnh sửa
+  const [openModal, setOpenModal] = useState(false); // Trạng thái mở Modal
+
+  useEffect(() => {
+    fetchMovies();
+  }, []);
+
+  const fetchMovies = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/movies");
+      console.log(response.data);
+      setMovies(response.data);
+    } catch (error) {
+      console.error("Error fetching movies:", error);
+    }
+  };
+
+  // Mở Modal thêm hoặc chỉnh sửa phim
+  const openMovieModal = (movie = null) => {
+    if (movie) {
+      setFormData({
+        title: movie.title,
+        director: movie.director,
+        cast: movie.cast,
+        genre: movie.genre,
+        release_date: movie.release_date,
+        duration: movie.duration,
+        language: movie.language,
+        rating: movie.rating,
+        description: movie.description,
+        trailer: movie.trailer,
+        genre: movie.genre,
+        poster: movie.poster,
+      });
+      setEditingMovieId(movie.movie_id); // Sửa phim
+    } else {
+      // Thêm phim
+      setFormData({
+        title: "",
+        director: "",
+        cast: "",
+        genre: "",
+        release_date: "",
+        duration: "",
+        language: "",
+        rating: "",
+        description: "",
+        trailer: "",
+        poster: "",
+        genre: "",
+        poster: "",
+      });
+      setEditingMovieId(null);
+    }
+    setOpenModal(true); // Mở modal
+  };
+
   const handleInputChange = (event) => {
     const { name, value } = event.target;
     setFormData({
@@ -26,184 +103,252 @@ const MovieManager = () => {
     });
   };
 
-  // Hàm xử lý upload poster
-  const handlePosterUpload = (event) => {
-    setPoster(event.target.files[0]);
-  };
-
-  // Hàm xử lý submit form
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    try {
-      const movieData = new FormData();
-      // Append tất cả các giá trị từ form
-      Object.keys(formData).forEach((key) => {
-        movieData.append(key, formData[key]);
-      });
+    const movieData = {
+      title: formData.title,
+      director: formData.director,
+      cast: formData.cast,
+      genre: formData.genre,
+      release_date: formData.release_date,
+      duration: formData.duration,
+      language: formData.language,
+      rating: formData.rating,
+      description: formData.description,
+      trailer: formData.trailer,
+      genre: formData.genre,
+      poster: formData.poster,
+    };
 
-      if (poster) {
-        movieData.append("poster", poster); // Append poster nếu có
+    try {
+      if (editingMovieId) {
+        console.log("asd1");
+        // Nếu đang chỉnh sửa, gọi API update
+        await axios.put(
+          `http://localhost:5000/api/movies/${editingMovieId}`,
+          movieData
+        );
+        alert("Movie updated successfully");
+      } else {
+        // Nếu thêm mới
+        await axios.post("http://localhost:5000/api/movies", movieData);
+        alert("Movie added successfully");
       }
 
-      // Gửi dữ liệu tới API
-      await axios.post("/api/movies", movieData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      // Reset form data
+      setFormData({
+        title: "",
+        director: "",
+        cast: "",
+        genre: "",
+        release_date: "",
+        duration: "",
+        language: "",
+        rating: "",
+        description: "",
+        trailer: "",
+        poster: "",
+        genre: "",
       });
-      alert("Movie added successfully");
+
+      setEditingMovieId(null);
+      fetchMovies(); // Cập nhật lại danh sách phim
+      setOpenModal(false); // Đóng modal
     } catch (error) {
       console.error(error);
     }
   };
 
+  const handleDelete = async (movieId) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/movies/${movieId}`);
+      alert("Movie deleted successfully");
+      fetchMovies();
+    } catch (error) {
+      console.error("Error deleting movie:", error);
+    }
+  };
+  console.log(editingMovieId);
   return (
     <Box sx={{ p: 4 }}>
-      <form onSubmit={handleSubmit}>
-        <Grid container spacing={2}>
-          {/* Title */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Title"
-              name="title"
-              value={formData.title}
-              onChange={handleInputChange}
-              required
-            />
-          </Grid>
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => openMovieModal()}
+        >
+          Add Movie
+        </Button>
+      </Box>
 
-          {/* Director */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Director"
-              name="director"
-              value={formData.director}
-              onChange={handleInputChange}
-              required
-            />
-          </Grid>
+      <TableContainer sx={{ maxHeight: "100vh" }}>
+        <Table sx={{ mt: 4 }}>
+          <TableHead>
+            <TableRow>
+              <TableCell>Title</TableCell>
+              <TableCell>Director</TableCell>
+              <TableCell>Genre</TableCell>
+              <TableCell>Release Date</TableCell>
 
-          {/* Cast */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Cast"
-              name="cast"
-              value={formData.cast}
-              onChange={handleInputChange}
-              required
-            />
-          </Grid>
+              <TableCell>Rating</TableCell>
+              <TableCell>Language</TableCell>
+              <TableCell>Cast</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Poster</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {movies.map((movie) => (
+              <TableRow key={movie.id}>
+                <TableCell>{movie.title}</TableCell>
+                <TableCell>{movie.director}</TableCell>
+                <TableCell>{movie.genre}</TableCell>
+                <TableCell>{movie.release_date}</TableCell>
 
-          {/* Genre */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Genre"
-              name="genre"
-              value={formData.genre}
-              onChange={handleInputChange}
-              required
-            />
-          </Grid>
+                <TableCell>{movie.rating}</TableCell>
+                <TableCell>{movie.language}</TableCell>
+                <TableCell>{movie.cast}</TableCell>
+                <TableCell>{movie.description}</TableCell>
+                <TableCell>
+                  <img
+                    src={movie.poster}
+                    alt={movie.title}
+                    style={{
+                      width: "100px",
+                      height: "auto",
+                      borderRadius: "4px",
+                    }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <IconButton onClick={() => openMovieModal(movie)}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton onClick={() => handleDelete(movie.movie_id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-          {/* Release Date */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Release Date"
-              type="date"
-              name="release_date"
-              value={formData.release_date}
-              onChange={handleInputChange}
-              InputLabelProps={{ shrink: true }}
-              required
-            />
+      {/* Modal để thêm/sửa phim */}
+      <Dialog
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>{editingMovieId ? "Edit Movie" : "Add Movie"}</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Title"
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                required
+              />
+              <TextField
+                fullWidth
+                label="Director"
+                name="director"
+                value={formData.director}
+                onChange={handleInputChange}
+                required
+              />
+              <TextField
+                fullWidth
+                label="Cast"
+                name="cast"
+                value={formData.cast}
+                onChange={handleInputChange}
+                required
+              />
+              <TextField
+                fullWidth
+                label="Genre"
+                name="genre"
+                value={formData.genre}
+                onChange={handleInputChange}
+                required
+              />
+              <TextField
+                fullWidth
+                label="Release Date"
+                name="release_date"
+                type="date"
+                value={formData.release_date}
+                onChange={handleInputChange}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                required
+              />
+              <TextField
+                fullWidth
+                label="Duration"
+                name="duration"
+                value={formData.duration}
+                onChange={handleInputChange}
+                required
+              />
+              <TextField
+                fullWidth
+                label="Language"
+                name="language"
+                value={formData.language}
+                onChange={handleInputChange}
+                required
+              />
+              <TextField
+                fullWidth
+                label="Rating"
+                name="rating"
+                value={formData.rating}
+                onChange={handleInputChange}
+                required
+              />
+              <TextField
+                fullWidth
+                label="Description"
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                required
+              />
+              <TextField
+                fullWidth
+                label="Trailer"
+                name="trailer"
+                value={formData.trailer}
+                onChange={handleInputChange}
+                required
+              />
+              <TextField
+                fullWidth
+                label="Poster"
+                name="poster"
+                value={formData.poster}
+                onChange={handleInputChange}
+                required
+              />
+            </Grid>
           </Grid>
-
-          {/* Duration */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Duration (minutes)"
-              type="number"
-              name="duration"
-              value={formData.duration}
-              onChange={handleInputChange}
-              required
-            />
-          </Grid>
-
-          {/* Language */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Language"
-              name="language"
-              value={formData.language}
-              onChange={handleInputChange}
-              required
-            />
-          </Grid>
-
-          {/* Rating */}
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Rating"
-              type="number"
-              name="rating"
-              value={formData.rating}
-              onChange={handleInputChange}
-              inputProps={{ min: 0, max: 10 }}
-              required
-            />
-          </Grid>
-
-          {/* Description */}
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Description"
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              multiline
-              rows={4}
-              required
-            />
-          </Grid>
-
-          {/* Poster */}
-          <Grid item xs={12}>
-            <Button variant="contained" component="label">
-              Upload Poster
-              <input type="file" hidden onChange={handlePosterUpload} />
-            </Button>
-            {poster && <p>{poster.name}</p>}
-          </Grid>
-
-          {/* Trailer */}
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Trailer URL"
-              name="trailer"
-              value={formData.trailer}
-              onChange={handleInputChange}
-              required
-            />
-          </Grid>
-
-          {/* Submit Button */}
-          <Grid item xs={12}>
-            <Button type="submit" variant="contained" color="primary">
-              Save Movie
-            </Button>
-          </Grid>
-        </Grid>
-      </form>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenModal(false)}>Cancel</Button>
+          <Button onClick={handleSubmit} variant="contained" color="primary">
+            {editingMovieId ? "Update Movie" : "Save Movie"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

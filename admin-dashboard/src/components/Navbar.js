@@ -27,15 +27,31 @@ const Navbar = () => {
           </ListItemIcon>
           <ListItemText primary="Dashboard" />
         </ListItem>
-
         <ListItem button component={Link} to="/admin/users">
           <ListItemIcon>
             <PeopleIcon />
           </ListItemIcon>
           <ListItemText primary="Users" />
         </ListItem>
-
+        <ListItem button component={Link} to="/admin/movies">
+          <ListItemIcon>
+            <PeopleIcon />
+          </ListItemIcon>
+          <ListItemText primary="Movie" />
+        </ListItem>
+        <ListItem button component={Link} to="/admin/seat">
+          <ListItemIcon>
+            <PeopleIcon />
+          </ListItemIcon>
+          <ListItemText primary="Seat" />
+        </ListItem>
         {/* Thêm các mục khác nếu cần */}
+        <ListItem button component={Link} to="/admin/bookingUser">
+          <ListItemIcon>
+            <PeopleIcon />
+          </ListItemIcon>
+          <ListItemText primary="bookingUser" />
+        </ListItem>
 
         {/* Mục Đăng xuất */}
         <ListItem button onClick={handleLogout}>

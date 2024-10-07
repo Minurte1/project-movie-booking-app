@@ -11,19 +11,25 @@ const Register = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
-
+  const [email, setEmail] = useState(""); // State mới cho email
+  const [phoneNo, setPhoneNo] = useState(""); // State mới cho phone_no
   const handleRegister = async (e) => {
     e.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
-
+    console.log("asd");
     try {
-      const response = await axios.post("/register", {
-        username,
-        password,
-        user_id: userId,
-      });
-
+      const response = await axios.post(
+        "http://localhost:5000/api/register/admin",
+        {
+          username,
+          password,
+          user_id: userId,
+          phoneNo,
+          email,
+        }
+      );
+      console.log("re", response.data);
       if (response.status === 201) {
         setSuccessMessage(response.data.message);
         // Chuyển hướng đến trang đăng nhập hoặc dashboard
@@ -71,6 +77,25 @@ const Register = () => {
             margin="normal"
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
+            required
+          />{" "}
+          <TextField
+            label="Phone"
+            type="password"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            value={phoneNo}
+            onChange={(e) => setPhoneNo(e.target.value)}
+            required
+          />
+          <TextField
+            label="Email"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
           {errorMessage && (

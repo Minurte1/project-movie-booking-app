@@ -11,7 +11,8 @@ import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import "react-bootstrap/dist/react-bootstrap.min.js";
 import "react-circular-progressbar/dist/styles.css";
-
+import CinemaSeatsModal from "./modal/CinemaSeatsModal";
+import axios from "axios";
 const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
@@ -72,6 +73,9 @@ function DetailMovie(props) {
     phone: "",
     time: "",
     payment: "",
+    date: "",
+    day_of_week: "",
+    seat_number: "",
   });
   useEffect(() => {
     const fetchMovieDetails = async () => {
@@ -122,126 +126,158 @@ function DetailMovie(props) {
     });
   };
 
-  const handleBookingSubmit = async (e) => {
-    e.preventDefault();
+  // const handleBookingSubmit = async (e) => {
+  //   e.preventDefault();
 
-    const emailTemplate = `
-        <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; color: #333; width:400px">
-            <thead>
-                <tr style="background-color: #ff8c00; color: white;">
-                    <th colspan="2" style="padding: 10px; text-align: center; font-size: 18px;">Booking Information</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Name:</td>
-                    <td style="padding: 10px;">${bookingInfo.name}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Email:</td>
-                    <td style="padding: 10px;">${bookingInfo.email}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Phone Number:</td>
-                    <td style="padding: 10px;">${bookingInfo.phone}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Showtime:</td>
-                    <td style="padding: 10px;">${bookingInfo.time}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Payment Method:</td>
-                    <td style="padding: 10px;">${bookingInfo.payment}</td>
-                </tr>
-            </tbody>
-        </table>
-        <br/>
-        <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; color: #333;">
-            <thead>
-                <tr style="background-color: #ff8c00; color: white;">
-                    <th colspan="2" style="padding: 10px; text-align: center; font-size: 18px;">Show Details</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Title:</td>
-                    <td style="padding: 10px;">${detailMovie.title}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Director:</td>
-                    <td style="padding: 10px;">${detailMovie.director}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Cast:</td>
-                    <td style="padding: 10px;">${detailMovie.cast}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Genre:</td>
-                    <td style="padding: 10px;">${detailMovie.genre}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Release Date:</td>
-                    <td style="padding: 10px;">${new Date(
-                      detailMovie.release_date
-                    ).toLocaleDateString()}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Duration:</td>
-                    <td style="padding: 10px;">${detailMovie.duration} mins</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Language:</td>
-                    <td style="padding: 10px;">${detailMovie.language}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Rating:</td>
-                    <td style="padding: 10px;">${detailMovie.rating}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Description:</td>
-                    <td style="padding: 10px;">${detailMovie.description}</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Seat Price:</td>
-                    <td style="padding: 10px;">${
-                      detailMovie.seat_price
-                    } VND</td>
-                </tr>
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">VIP Price:</td>
-                    <td style="padding: 10px;">${detailMovie.VIP_price} VND</td>
-                </tr>
-            </tbody>
-        </table>
-    `;
+  //   const emailTemplate = `
+  //       <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; color: #333; width:400px">
+  //           <thead>
+  //               <tr style="background-color: #ff8c00; color: white;">
+  //                   <th colspan="2" style="padding: 10px; text-align: center; font-size: 18px;">Booking Information</th>
+  //               </tr>
+  //           </thead>
+  //           <tbody>
+  //               <tr>
+  //                   <td style="padding: 10px; font-weight: bold;">Name:</td>
+  //                   <td style="padding: 10px;">${bookingInfo.name}</td>
+  //               </tr>
+  //               <tr>
+  //                   <td style="padding: 10px; font-weight: bold;">Email:</td>
+  //                   <td style="padding: 10px;">${bookingInfo.email}</td>
+  //               </tr>
+  //               <tr>
+  //                   <td style="padding: 10px; font-weight: bold;">Phone Number:</td>
+  //                   <td style="padding: 10px;">${bookingInfo.phone}</td>
+  //               </tr>
+  //               <tr>
+  //                   <td style="padding: 10px; font-weight: bold;">Showtime:</td>
+  //                   <td style="padding: 10px;">${bookingInfo.time}</td>
+  //               </tr>
+  //               <tr>
+  //                   <td style="padding: 10px; font-weight: bold;">Payment Method:</td>
+  //                   <td style="padding: 10px;">${bookingInfo.payment}</td>
+  //               </tr>
+  //           </tbody>
+  //       </table>
+  //       <br/>
+  //       <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; color: #333;">
+  //           <thead>
+  //               <tr style="background-color: #ff8c00; color: white;">
+  //                   <th colspan="2" style="padding: 10px; text-align: center; font-size: 18px;">Show Details</th>
+  //               </tr>
+  //           </thead>
+  //           <tbody>
+  //               <tr>
+  //                   <td style="padding: 10px; font-weight: bold;">Title:</td>
+  //                   <td style="padding: 10px;">${detailMovie.title}</td>
+  //               </tr>
+  //               <tr>
+  //                   <td style="padding: 10px; font-weight: bold;">Director:</td>
+  //                   <td style="padding: 10px;">${detailMovie.director}</td>
+  //               </tr>
+  //               <tr>
+  //                   <td style="padding: 10px; font-weight: bold;">Cast:</td>
+  //                   <td style="padding: 10px;">${detailMovie.cast}</td>
+  //               </tr>
+  //               <tr>
+  //                   <td style="padding: 10px; font-weight: bold;">Genre:</td>
+  //                   <td style="padding: 10px;">${detailMovie.genre}</td>
+  //               </tr>
+  //               <tr>
+  //                   <td style="padding: 10px; font-weight: bold;">Release Date:</td>
+  //                   <td style="padding: 10px;">${new Date(
+  //                     detailMovie.release_date
+  //                   ).toLocaleDateString()}</td>
+  //               </tr>
+  //               <tr>
+  //                   <td style="padding: 10px; font-weight: bold;">Duration:</td>
+  //                   <td style="padding: 10px;">${detailMovie.duration} mins</td>
+  //               </tr>
+  //               <tr>
+  //                   <td style="padding: 10px; font-weight: bold;">Language:</td>
+  //                   <td style="padding: 10px;">${detailMovie.language}</td>
+  //               </tr>
+  //               <tr>
+  //                   <td style="padding: 10px; font-weight: bold;">Rating:</td>
+  //                   <td style="padding: 10px;">${detailMovie.rating}</td>
+  //               </tr>
+  //               <tr>
+  //                   <td style="padding: 10px; font-weight: bold;">Description:</td>
+  //                   <td style="padding: 10px;">${detailMovie.description}</td>
+  //               </tr>
+  //               <tr>
+  //                   <td style="padding: 10px; font-weight: bold;">Seat Price:</td>
+  //                   <td style="padding: 10px;">${
+  //                     detailMovie.seat_price
+  //                   } VND</td>
+  //               </tr>
+  //               <tr>
+  //                   <td style="padding: 10px; font-weight: bold;">VIP Price:</td>
+  //                   <td style="padding: 10px;">${detailMovie.VIP_price} VND</td>
+  //               </tr>
+  //           </tbody>
+  //       </table>
+  //   `;
 
-    const emailData = {
-      emailTo: bookingInfo.email,
-      template: emailTemplate,
-    };
+  //   const emailData = {
+  //     emailTo: bookingInfo.email,
+  //     template: emailTemplate,
+  //   };
 
+  //   try {
+  //     const response = await fetch(
+  //       "http://emailserivce.somee.com/Email/sendMail",
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify(emailData),
+  //       }
+  //     );
+
+  //     if (response.ok) {
+  //       alert("Booking information has been sent successfully!");
+  //       setBookingModalShow(false); // Đóng modal sau khi submit
+  //     } else {
+  //       alert("Failed to send booking information.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error sending email:", error);
+  //     alert("There was an error sending the email.");
+  //   }
+  // };
+  console.log("detailMovie", detailMovie);
+  const [open, setOpen] = useState(false);
+  const [chooseSeat, setChooseSeat] = useState("");
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const [dayOfWeek, setDayOfWeek] = useState(0); // Ví dụ cho ngày trong tuần
+  const [day, setDay] = useState(""); // Ví dụ cho ngày cụ thể
+  console.log("dayOfWeek", dayOfWeek);
+  console.log("day", day);
+  const handleBookingSubmit = async (event) => {
+    event.preventDefault();
     try {
-      const response = await fetch(
-        "http://emailserivce.somee.com/Email/sendMail",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(emailData),
-        }
-      );
-
-      if (response.ok) {
-        alert("Booking information has been sent successfully!");
-        setBookingModalShow(false); // Đóng modal sau khi submit
-      } else {
-        alert("Failed to send booking information.");
-      }
+      const response = await axios.post("http://localhost:5000/api/bookings", {
+        bookingInfo,
+        chooseSeat,
+        dayOfWeek,
+        day,
+      });
+      console.log(response.data);
     } catch (error) {
-      console.error("Error sending email:", error);
-      alert("There was an error sending the email.");
+      console.error("Error fetching movies:", error);
     }
+  };
+
+  // Hàm setDayOfWeek và setDay có thể có logic tùy chỉnh mà bạn muốn
+  const handleSetDayOfWeek = (day) => {
+    setDayOfWeek(day);
+  };
+
+  const handleSetDay = (day) => {
+    setDay(day);
   };
 
   const showBookingForm = (showtime) => {
@@ -412,7 +448,9 @@ function DetailMovie(props) {
                     history={props.history}
                     detailMovie={detailMovie}
                     schedule={schedule}
-                  />
+                    setDayOfWeek={handleSetDayOfWeek} // Truyền hàm setDayOfWeek
+                    setDay={handleSetDay} // Truyền hàm setDay
+                  />{" "}
                 </Paper>
               </div>
               <div
@@ -558,8 +596,21 @@ function DetailMovie(props) {
                   <option value="cash">Cash</option>
                 </Form.Control>
               </Form.Group>
-
+              <div>
+                <button className="btn btn-primary" onClick={handleOpen}>
+                  Chọn ghế
+                </button>
+                <span className="ml-2 text-success">
+                  {chooseSeat ? `${chooseSeat}` : ""}
+                </span>
+                <CinemaSeatsModal
+                  open={open}
+                  setChooseSeat={setChooseSeat}
+                  onClose={handleClose}
+                />
+              </div>
               <Button
+                className="mt-2"
                 type="submit"
                 style={{
                   backgroundColor: "#ff8c00",

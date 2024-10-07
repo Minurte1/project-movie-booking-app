@@ -6,6 +6,8 @@ import Users from "../pages/Users";
 import MovieManager from "../pages/MovieManager";
 import PrivateRoute from "../components/PrivateRoute";
 import Navbar from "../components/Navbar"; // Import Navbar
+import SeatManager from "../pages/Seat";
+import BookingUser from "../pages/BookingUser";
 
 const AdminLayout = () => (
   <div style={{ display: "flex" }}>
@@ -17,6 +19,15 @@ const AdminLayout = () => (
         <Route
           path="/movies"
           element={<PrivateRoute element={<MovieManager />} />}
+        />
+
+        <Route
+          path="/seat"
+          element={<PrivateRoute element={<SeatManager />} />}
+        />
+        <Route
+          path="/bookingUser"
+          element={<PrivateRoute element={<BookingUser />} />}
         />
       </Routes>
     </div>
