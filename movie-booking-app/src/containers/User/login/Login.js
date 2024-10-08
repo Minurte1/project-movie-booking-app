@@ -55,8 +55,8 @@ function Login(props) {
     });
   };
 
-  //   const handleOpen = () => setOpen(true);
-  //   const handleClose = () => setOpen(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   return (
     <div className="login">
@@ -139,7 +139,7 @@ function Login(props) {
           </button>
           <button
             type="submit"
-            // onClick={handleOpen}
+            onClick={handleOpen}
             className="btn my-2"
             style={{
               width: "100%",
@@ -149,8 +149,8 @@ function Login(props) {
           >
             Login with Google
           </button>
-          {/* <SignInForm open={open} handleClose={handleClose} /> */}
-        </div>
+        </div>{" "}
+        <SignInForm open={open} handleClose={handleClose} />
         <div>
           <span>Haven't got your account? </span>
           <NavLink
