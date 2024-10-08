@@ -35,4 +35,5 @@ router.put("/seat/:id", homeControllerSeatV2.updateSeat);
 // Xóa ghế
 router.delete("/seat/:id", homeControllerSeatV2.deleteSeat);
 router.get("/total-revenue", homeController.getTotalRevenue);
+router.post("/login-gg", homeController.LoginGoogle);
 module.exports = router;

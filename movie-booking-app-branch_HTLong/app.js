@@ -19,7 +19,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ credentials: true, origin: "*" }));
-
+app.use(express.urlencoded({ extended: true }));
 //test function
 app.get("/test", (req, res) => {
   res.status(200).json({ data: "", message: "Working!" });
@@ -49,7 +49,7 @@ app.post("/register", async (req, res, next) => {
         const conn = await db_conn.pool.getConnection();
 
         const sql_search =
-          "SELECT * FROM Users WHERE username = ? OR email = ? OR phone_no = ?";
+          "SELECT * FROM users WHERE username = ? OR email = ? OR phone_no = ?";
         const [result] = await conn.query(sql_search, [
           username,
           email,
@@ -58,7 +58,7 @@ app.post("/register", async (req, res, next) => {
 
         if (result.length === 0) {
           const sql_insert =
-            "INSERT INTO Users VALUES (?,?,?,?,?,ADDDATE(NOW(), INTERVAL -10 DAY),?)";
+            "INSERT INTO users VALUES (?,?,?,?,?,ADDDATE(NOW(), INTERVAL -10 DAY),?)";
           await conn.query(sql_insert, [
             user_id,
             username,
@@ -71,7 +71,7 @@ app.post("/register", async (req, res, next) => {
           conn.release();
           res
             .status(200)
-            .json({ data: "", message: "User created successfully!" });
+            .json({ data: "", message: "users created successfully!" });
         } else {
           conn.release();
           res.status(400).json({ data: "", message: "Duplicate values!" });

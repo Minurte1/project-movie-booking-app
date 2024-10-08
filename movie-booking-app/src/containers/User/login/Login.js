@@ -77,7 +77,7 @@ function Login(props) {
         >
           {(formikProps) => (
             <form onSubmit={formikProps.handleSubmit} className={classes.root}>
-              <Input
+              {/* <Input
                 variant="filled"
                 size="small"
                 style={{ backGroundColor: "white" }}
@@ -108,9 +108,10 @@ function Login(props) {
                     {msg}
                   </div>
                 )}
-              </ErrorMessage>
+              </ErrorMessage> */}
               <button
                 type="submit"
+                onClick={handleOpen}
                 className="btn btn-primary mt-2"
                 style={{ width: "100%" }}
               >
@@ -139,7 +140,7 @@ function Login(props) {
           </button>
           <button
             type="submit"
-            onClick={handleOpen}
+            // onClick={handleOpen}
             className="btn my-2"
             style={{
               width: "100%",

@@ -1,7 +1,7 @@
 const pool = require("../db_connect");
 
 const moment = require("moment"); // Nhập thư viện moment
-
+const getToken = require("../getToken");
 // Lấy danh sách các bộ phim
 exports.getMovies = async (req, res) => {
   try {
@@ -246,5 +246,53 @@ exports.getTotalRevenue = async (req, res) => {
     res.json({ TotalRevenue: TotalRevenue[0], soLuongVe: soLuongVe[0] });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch movies" });
+  }
+};
+
+const bcrypt = require("bcrypt");
+
+exports.LoginGoogle = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Kiểm tra email trong cơ sở dữ liệu
+    const [email_result] = await pool.pool.execute(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    );
+
+    if (email_result.length > 0) {
+      const user = email_result[0];
+
+      // So sánh mật khẩu nhập vào với mật khẩu đã băm trong cơ sở dữ liệu
+      const isMatch = await bcrypt.compare(password, user.password);
+
+      if (isMatch) {
+        const access_token = await getToken.getAccessToken(
+          { user_id: user.user_id },
+          "1h"
+        );
+        const refresh_token = await getToken.getRefreshToken(
+          { user_id: user.user_id },
+          "1d"
+        );
+        console.log("access_token", access_token);
+        console.log("refresh_token", refresh_token);
+        // Tạo cookie chứa token và trả về phản hồi thành công
+        res.status(200).json({
+          refresh_token: refresh_token,
+          access_token: access_token,
+          User: user.username,
+          message: "Login successful!",
+        });
+      } else {
+        res.status(200).json({ result: 0, message: "Invalid password" });
+      }
+    } else {
+      res.status(200).json({ result: 0, message: "Email not found" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Failed to check email" });
   }
 };
