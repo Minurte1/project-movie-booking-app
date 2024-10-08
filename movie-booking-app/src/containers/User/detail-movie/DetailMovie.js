@@ -254,6 +254,7 @@ function DetailMovie(props) {
   const handleClose = () => setOpen(false);
   const [dayOfWeek, setDayOfWeek] = useState(0); // Ví dụ cho ngày trong tuần
   const [day, setDay] = useState(""); // Ví dụ cho ngày cụ thể
+  const [seat_price, setSeat_price] = useState(null);
   console.log("dayOfWeek", dayOfWeek);
   console.log("day", day);
   const handleBookingSubmit = async (event) => {
@@ -264,10 +265,56 @@ function DetailMovie(props) {
         chooseSeat,
         dayOfWeek,
         day,
+        seat_price: detailMovie.seat_price,
+        tiket_booking: detailMovie.title,
       });
       console.log(response.data);
     } catch (error) {
       console.error("Error fetching movies:", error);
+    }
+  };
+  const handleBooKingOnline = async (event) => {
+    event.preventDefault();
+    console.log("Booking Info:", bookingInfo);
+    console.log("Chosen Seats:", chooseSeat);
+    console.log("Day of Week:", dayOfWeek);
+    console.log("Day:", day);
+    console.log("Seat Price:", detailMovie.seat_price);
+    console.log("Movie Title:", detailMovie.title);
+
+    // Kiểm tra dữ liệu
+    if (
+      !bookingInfo || // Check if booking info is present
+      !chooseSeat ||
+      chooseSeat.length === 0 || // Ensure at least one seat is selected
+      !dayOfWeek || // Validate day of the week
+      !day || // Validate the actual day/date
+      !detailMovie.seat_price || // Validate seat price
+      !detailMovie.title // Validate if movie title exists
+    ) {
+      alert("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại."); // Show error toast if validation fails
+      return; // Stop the function execution and don't open a new window
+    }
+
+    // Open new window for VNPayment
+    window.open(
+      "https://sandbox.vnpayment.vn/tryitnow/Home/CreateOrder",
+      "_blank"
+    );
+
+    try {
+      // Post the booking details to the backend
+      const response = await axios.post("http://localhost:5000/api/bookings", {
+        bookingInfo,
+        chooseSeat,
+        dayOfWeek,
+        day,
+        seat_price: detailMovie.seat_price,
+        tiket_booking: detailMovie.title,
+      });
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error posting booking:", error);
     }
   };
 
@@ -609,24 +656,52 @@ function DetailMovie(props) {
                   onClose={handleClose}
                 />
               </div>
-              <Button
-                className="mt-2"
-                type="submit"
-                style={{
-                  backgroundColor: "#ff8c00",
-                  color: "white",
-                  border: "none",
-                  padding: "10px 20px",
-                  fontSize: "1rem",
-                  fontWeight: "bold",
-                  textTransform: "uppercase",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  transition: "background-color 0.3s ease",
-                }}
-              >
-                Confirm Booking
-              </Button>
+              {bookingInfo.payment === "creditCard" ? (
+                <>
+                  {" "}
+                  <Button
+                    className="mt-2"
+                    onClick={handleBooKingOnline}
+                    type="submit"
+                    style={{
+                      backgroundColor: "#ff8c00",
+                      color: "white",
+                      border: "none",
+                      padding: "10px 20px",
+                      fontSize: "1rem",
+                      fontWeight: "bold",
+                      textTransform: "uppercase",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      transition: "background-color 0.3s ease",
+                    }}
+                  >
+                    Booking Online
+                  </Button>{" "}
+                </>
+              ) : (
+                <>
+                  {" "}
+                  <Button
+                    className="mt-2"
+                    type="submit"
+                    style={{
+                      backgroundColor: "#ff8c00",
+                      color: "white",
+                      border: "none",
+                      padding: "10px 20px",
+                      fontSize: "1rem",
+                      fontWeight: "bold",
+                      textTransform: "uppercase",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      transition: "background-color 0.3s ease",
+                    }}
+                  >
+                    Confirm Booking
+                  </Button>{" "}
+                </>
+              )}
             </Form>
           </Modal.Body>
         </Modal>

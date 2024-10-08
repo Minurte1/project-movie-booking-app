@@ -204,10 +204,11 @@ exports.getBookings = async (req, res) => {
 
 // Thêm đặt vé mới
 exports.addBooking = async (req, res) => {
-  const { bookingInfo, dayOfWeek, chooseSeat, day } = req.body;
+  const { bookingInfo, dayOfWeek, chooseSeat, day, seat_price, tiket_booking } =
+    req.body;
   console.log(req.body);
   const sql =
-    "INSERT INTO bookingUser (name, email, phone_number, showtime, payment_method, date, day_of_week, seat_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    "INSERT INTO bookingUser (name, email, phone_number, showtime, payment_method, date, day_of_week, seat_number,price_booking,tiket_booking) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?)";
 
   try {
     const [results] = await pool.pool.query(sql, [
@@ -219,21 +220,31 @@ exports.addBooking = async (req, res) => {
       day,
       dayOfWeek,
       chooseSeat,
+      seat_price,
+      tiket_booking,
     ]);
 
-    res.status(201).json({
-      id: results.insertId,
-      name: bookingInfo.name,
-      email: bookingInfo.email,
-      phone_number: bookingInfo.phone,
-      showtime: bookingInfo.time,
-      payment_method: bookingInfo.payment,
-      date: day,
-      day_of_week: dayOfWeek,
-      seat_number: chooseSeat,
-    });
+    res.status(201).json({});
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: err.message });
+  }
+};
+exports.getTotalRevenue = async (req, res) => {
+  try {
+    const [TotalRevenue] = await pool.pool.execute(
+      "SELECT SUM(price_booking) AS totalRevenue FROM bookingUser"
+    );
+    const [soLuongVe] = await pool.pool.execute(
+      `
+      SELECT 
+        SUM(CHAR_LENGTH(seat_number) - CHAR_LENGTH(REPLACE(seat_number, ',', '')) + 1) AS totalTickets
+      FROM bookingUser
+      `
+    );
+
+    res.json({ TotalRevenue: TotalRevenue[0], soLuongVe: soLuongVe[0] });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch movies" });
   }
 };
