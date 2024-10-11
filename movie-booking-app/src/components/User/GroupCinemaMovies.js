@@ -195,7 +195,7 @@ function GroupCinemaMovies(props) {
                     key={index4}
                   >
                     <span className="timestart">{item.time_start_t}</span>
-                    <span>{` ~ ${getTimeEnd(item.time_start_t)}`}</span>
+                    <span>{` ~ ${getTimeEnd(item.time_start_t)}`} </span>
                   </NavLink>
                 );
               })}
@@ -218,6 +218,7 @@ function GroupCinemaMovies(props) {
           scrollButtons="auto"
           aria-label="scrollable auto tabs example"
         >
+          {" "}
           {renderTab()}
         </Tabs>
       </AppBar>

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const homeController = require("../controllers/homeController");
 const homeControllerSeatV2 = require("../controllers/homeControllerSeatv2");
+const CommentController = require("../controllers/CommentController");
 // Lấy danh sách phim
 router.get("/movies", homeController.getMovies);
 
@@ -36,4 +37,13 @@ router.put("/seat/:id", homeControllerSeatV2.updateSeat);
 router.delete("/seat/:id", homeControllerSeatV2.deleteSeat);
 router.get("/total-revenue", homeController.getTotalRevenue);
 router.post("/login-gg", homeController.LoginGoogle);
+
+// Định nghĩa các route cho CRUD
+router.post("/comments", CommentController.addComment);
+router.get("/comments", CommentController.getAllComments);
+router.get("/comments/:id", CommentController.getCommentById);
+router.get("/commentsSanPham/:id", CommentController.getCommentByIdSanPham);
+router.put("/comments/:id", CommentController.updateComment);
+router.delete("/comments/:id", CommentController.deleteComment);
+
 module.exports = router;

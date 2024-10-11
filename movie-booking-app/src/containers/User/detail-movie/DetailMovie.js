@@ -77,6 +77,8 @@ function DetailMovie(props) {
     day_of_week: "",
     seat_number: "",
   });
+  const [data_Comment, setData_Comment] = useState([]);
+  useEffect(() => {}, []);
   useEffect(() => {
     const fetchMovieDetails = async () => {
       const id = props.match.params.id;
@@ -372,6 +374,27 @@ function DetailMovie(props) {
       return stars;
     }
   };
+  const [comments, setComments] = useState([]); // Danh sách bình luận
+  const [newComment, setNewComment] = useState(""); // Nội dung bình luận mới
+
+  const handleAddComment = async () => {
+    if (newComment.trim() !== "") {
+      const newCommentObj = {
+        username: "User123", // Bạn có thể thay đổi để lấy tên người dùng từ hệ thống đăng nhập
+        content: newComment,
+        date: new Date().toLocaleString(),
+      };
+      try {
+        const response = await axios.post("http://localhost:5000/api/comments");
+        console.log(response.data);
+      } catch (err) {
+        console.log(err);
+      }
+      setComments([...comments, newCommentObj]); // Cập nhật danh sách bình luận
+      setNewComment(""); // Xóa nội dung sau khi gửi bình luận
+    }
+  };
+
   if (isLoading) {
     return (
       <ThemeProvider theme={theme}>
@@ -503,6 +526,19 @@ function DetailMovie(props) {
                 >
                   Information
                 </a>
+              </li>{" "}
+              <li className="nav-item">
+                <a
+                  className="nav-link"
+                  id="info-tab"
+                  data-toggle="tab"
+                  href="#comment"
+                  role="tab"
+                  aria-controls="info"
+                  aria-selected="false"
+                >
+                  Comment
+                </a>
               </li>
             </ul>
             <div className="tab-content" id="myTabContent">
@@ -522,9 +558,41 @@ function DetailMovie(props) {
                   />{" "}
                 </Paper>
               </div>
+              <div id="comment" className="comments-section mt-4">
+                <h4>Comments</h4>
+
+                {/* Hiển thị danh sách bình luận */}
+                <div className="comments-list">
+                  {comments.map((comment, index) => (
+                    <div key={index} className="comment-item mb-2">
+                      <strong>{comment.username}</strong>
+                      <p>{comment.content}</p>
+                      <small>{comment.date}</small>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Form nhập bình luận */}
+                <div className="comment-form mt-3">
+                  <h5>Add a Comment</h5>
+                  <textarea
+                    className="form-control"
+                    rows="3"
+                    placeholder="Write your comment..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                  ></textarea>
+                  <button
+                    className="btn btn-primary mt-2"
+                    onClick={handleAddComment}
+                  >
+                    Bình Luận
+                  </button>
+                </div>
+              </div>
               <div
                 className="tab-pane fade"
-                id="info"
+                id="comment"
                 role="tabpanel"
                 aria-labelledby="info-tab"
               >
@@ -572,7 +640,7 @@ function DetailMovie(props) {
                     </div>
                     <div className="row m-0">
                       <div className="col-5">
-                        <p className="title">Subtitle</p>
+                        <p className="title">Subtitle </p>
                       </div>
                       <div className="col-7">
                         <p className="content">{detailMovie.language}</p>
