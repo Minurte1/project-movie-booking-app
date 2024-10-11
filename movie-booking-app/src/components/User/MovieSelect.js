@@ -135,16 +135,15 @@ function MovieSelect(props) {
     movie_id: "",
   });
 
-
   const handleChange = (event) => {
     const { name, value } = event.target;
     const { id } = event.currentTarget;
-
+    console.log("id", id);
     if (name === "movieSelect") {
       props.getShowtimeInfo(id);
       window.localStorage.setItem("MOVIE_ID", id);
       console.log(props.showtimeInfo);
-      console.log(id)
+      console.log(id);
       const dates = [
         ...new Set(props.showtimeInfo.map((date) => date.time_start_d)),
       ];
@@ -172,7 +171,7 @@ function MovieSelect(props) {
         ...quickTicket,
         [name]: value,
       });
-    } 
+    }
 
     setQuickTicket((preTicket) => {
       let newId = window.localStorage.getItem("MOVIE_ID");

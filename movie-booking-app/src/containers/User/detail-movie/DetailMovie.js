@@ -80,44 +80,35 @@ function DetailMovie(props) {
     seat_number: "",
   });
   const [data_Comment, setData_Comment] = useState([]);
-  useEffect(() => {
-    const localStoreUsername = localStorage.getItem("User");
-    if (localStoreUsername) {
-      setUsername(localStoreUsername);
-    }
-    fetchDataComment();
-  }, []);
 
   useEffect(() => {
     const fetchMovieDetails = async () => {
+      const localStoreUsername = localStorage.getItem("User");
+      setUsername(localStoreUsername);
       const id = props.match.params.id;
+
       try {
-        const response = await Axios.get(
-          `http://localhost:5000/films?id=${id}`
-        );
-        console.log(response.data[0]);
+        // Thực hiện tất cả các API request song song
+        const [response, response_comment, result] = await Promise.all([
+          Axios.get(`http://localhost:5000/films?id=${id}`),
+          Axios.get(`http://localhost:5000/api/commentsSanPham/${id}`),
+          Axios.get(`http://localhost:5000/schedule?id=${id}`),
+        ]);
+
+        // Xử lý dữ liệu sau khi tất cả các request hoàn thành
         setDetailMovie(response.data[0]);
-        setIsLoading(true);
-        const result = await Axios.get(
-          `http://localhost:5000/schedule?id=${id}`
-        );
+        setData_Comment(response_comment.data);
         setSchedule(result.data);
+        setIsLoading(true);
       } catch (error) {
         console.log(error);
       }
     };
+
     fetchMovieDetails();
   }, [props.match.params.id]);
-  const fetchDataComment = async () => {
-    try {
-      const response = await Axios.get(`http://localhost:5000/api/comments`);
 
-      console.log(response.data);
-      setData_Comment(response.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  console.log("data_Comment", data_Comment);
   function VideoModal(props) {
     return (
       <Modal
@@ -284,16 +275,14 @@ function DetailMovie(props) {
       alert("There was an error sending the email.");
     }
   };
-  console.log("detailMovie", detailMovie);
+
   const [open, setOpen] = useState(false);
   const [chooseSeat, setChooseSeat] = useState("");
 
   const handleClose = () => setOpen(false);
   const [dayOfWeek, setDayOfWeek] = useState(0); // Ví dụ cho ngày trong tuần
   const [day, setDay] = useState(""); // Ví dụ cho ngày cụ thể
-  const [seat_price, setSeat_price] = useState(null);
-  console.log("dayOfWeek", dayOfWeek);
-  console.log("day", day);
+
   // const handleBookingSubmit = async (event) => {
   //   event.preventDefault();
   //   try {
@@ -604,73 +593,9 @@ function DetailMovie(props) {
                   />{" "}
                 </Paper>
               </div>
-              <div id="comment" className="comments-section mt-4">
-                <h4>Comments</h4>
-
-                {/* Hiển thị danh sách bình luận */}
-
-                <div className="comments-list scrollable">
-                  {data_Comment.map((comment, index) => (
-                    <div key={index} className="comment-item mb-2">
-                      {/* Hiển thị số sao */}
-                      <div className="rating">
-                        {Array.from({ length: comment.danh_gia }, (_, i) => (
-                          <span key={i} className="star text-danger">
-                            ★
-                          </span>
-                        ))}
-                      </div>
-                      <strong>{comment.id_nguoi_dung}</strong>{" "}
-                      <span>
-                        {" "}
-                        <strong>|| {comment.ngay_tao} </strong>
-                      </span>
-                      <p>{comment.noi_dung}</p>
-                      <small>
-                        {new Date(comment.ngay_tao).toLocaleDateString()}
-                      </small>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Form nhập bình luận */}
-                <div className="comment-form mt-3">
-                  <h5>Add a Comment</h5>
-                  <textarea
-                    className="form-control"
-                    rows="3"
-                    placeholder="Write your comment..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                  ></textarea>{" "}
-                  {/* Khu vực chọn rating */}
-                  <div className="rating-select mt-2">
-                    {/* <span>Select Rating: </span> */}
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <span
-                        key={star}
-                        className="star"
-                        style={{
-                          cursor: "pointer",
-                          color: star <= rating ? "#ffc107" : "#ccc",
-                        }}
-                        onClick={() => setRating(star)}
-                      >
-                        ★
-                      </span>
-                    ))}
-                  </div>
-                  <button
-                    className="btn btn-primary mt-2"
-                    onClick={handleAddComment}
-                  >
-                    Bình Luận
-                  </button>
-                </div>
-              </div>
               <div
                 className="tab-pane fade"
-                id="comment"
+                id="info"
                 role="tabpanel"
                 aria-labelledby="info-tab"
               >
@@ -731,6 +656,73 @@ function DetailMovie(props) {
                       {detailMovie.description}
                     </p>
                   </div>
+                </div>
+              </div>{" "}
+              <div id="comment" className="comments-section mt-4">
+                <h4>Bình luận</h4>
+
+                {/* Hiển thị danh sách bình luận */}
+                <div className="comments-list scrollable">
+                  {Array.isArray(data_Comment) && data_Comment.length > 0 ? (
+                    data_Comment.map((comment, index) => (
+                      <div key={index} className="comment-item mb-2">
+                        {/* Hiển thị số sao */}
+                        <div className="rating">
+                          {Array.from({ length: comment.danh_gia }, (_, i) => (
+                            <span key={i} className="star text-danger">
+                              ★
+                            </span>
+                          ))}
+                        </div>
+                        <strong>{comment.id_nguoi_dung}</strong>{" "}
+                        <span>
+                          {" "}
+                          <strong>|| {comment.ngay_tao} </strong>
+                        </span>
+                        <p>{comment.noi_dung}</p>
+                        <small>
+                          {new Date(comment.ngay_tao).toLocaleDateString()}
+                        </small>
+                      </div>
+                    ))
+                  ) : (
+                    <p>Không có bình luận nào.</p>
+                  )}
+                </div>
+
+                {/* Form nhập bình luận */}
+                <div className="comment-form mt-3">
+                  <h5>Add a Comment</h5>
+                  <textarea
+                    className="form-control"
+                    rows="3"
+                    placeholder="Write your comment..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                  ></textarea>{" "}
+                  {/* Khu vực chọn rating */}
+                  <div className="rating-select mt-2">
+                    {/* <span>Select Rating: </span> */}
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <span
+                        key={star}
+                        className="star"
+                        style={{
+                          cursor: "pointer",
+                          color: star <= rating ? "#ffc107" : "#ccc",
+                        }}
+                        onClick={() => setRating(star)}
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    className="btn btn-primary mt-2"
+                    onClick={handleAddComment}
+                  >
+                    Bình Luận
+                  </button>
                 </div>
               </div>
             </div>

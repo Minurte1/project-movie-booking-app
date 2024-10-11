@@ -46,7 +46,7 @@ function Login(props) {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const handleOnSubmit = (user) => {
-    debugger;
+    // debugger;
     props.login({
       user,
       history: props.history,

@@ -126,8 +126,8 @@ function GroupCinemaMovies(props) {
     setChosenDay(formattedDate);
 
     // Gọi các hàm để cập nhật trạng thái ngày
-    setDayOfWeek(dayOfWeek + 1); // Cập nhật thứ mấy (Chủ Nhật, Thứ Hai, v.v.)
-    setDay(formattedDate); // Cập nhật ngày cụ thể (yyyy-mm-dd)
+    setDayOfWeek(dayOfWeek + 1);
+    setDay(formattedDate);
   };
 
   const renderTab = () => {

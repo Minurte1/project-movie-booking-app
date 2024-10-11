@@ -33,7 +33,8 @@ exports.addComment = async (req, res) => {
     ]);
 
     const [results_comment] = await pool.pool.execute(
-      `SELECT * FROM binh_luan`
+      `SELECT * FROM binh_luan WHERE id_san_pham = ?`,
+      [id_san_pham]
     );
     console.log(results_comment);
     res.status(200).json({ DT: results_comment, EC: 1 });
@@ -65,9 +66,9 @@ exports.getCommentByIdSanPham = async (req, res) => {
   try {
     const [results] = await pool.pool.execute(sql, [id]);
     if (results.length === 0) {
-      res.status(404).json({ message: "Comment not found" });
+      res.status(200).json({ DT: [], EC: 0 });
     } else {
-      res.status(200).json(results[0]);
+      res.status(200).json(results);
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
