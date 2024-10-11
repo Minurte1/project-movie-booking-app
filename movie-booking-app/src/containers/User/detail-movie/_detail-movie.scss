@@ -312,6 +312,11 @@
     }
   }
 
+  .scrollable {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
   // Modify Navs Bootstrap
   .nav-tabs .nav-item .nav-link {
     color: $color-white-0;

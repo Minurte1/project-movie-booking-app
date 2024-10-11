@@ -67,6 +67,8 @@ function DetailMovie(props) {
   const [isLoading, setIsLoading] = useState(false);
   const [detailMovie, setDetailMovie] = useState([]);
   const [schedule, setSchedule] = useState([]);
+  const [username, setUsername] = useState("");
+
   const [bookingInfo, setBookingInfo] = useState({
     name: "",
     email: "",
@@ -78,7 +80,14 @@ function DetailMovie(props) {
     seat_number: "",
   });
   const [data_Comment, setData_Comment] = useState([]);
-  useEffect(() => {}, []);
+  useEffect(() => {
+    const localStoreUsername = localStorage.getItem("User");
+    if (localStoreUsername) {
+      setUsername(localStoreUsername);
+    }
+    fetchDataComment();
+  }, []);
+
   useEffect(() => {
     const fetchMovieDetails = async () => {
       const id = props.match.params.id;
@@ -99,7 +108,16 @@ function DetailMovie(props) {
     };
     fetchMovieDetails();
   }, [props.match.params.id]);
+  const fetchDataComment = async () => {
+    try {
+      const response = await Axios.get(`http://localhost:5000/api/comments`);
 
+      console.log(response.data);
+      setData_Comment(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   function VideoModal(props) {
     return (
       <Modal
@@ -374,25 +392,53 @@ function DetailMovie(props) {
       return stars;
     }
   };
-  const [comments, setComments] = useState([]); // Danh sách bình luận
-  const [newComment, setNewComment] = useState(""); // Nội dung bình luận mới
 
+  const [newComment, setNewComment] = useState(""); // Nội dung bình luận mới
+  const [rating, setRating] = useState(0); // Rating người dùng chọn
   const handleAddComment = async () => {
-    if (newComment.trim() !== "") {
-      const newCommentObj = {
-        username: "User123", // Bạn có thể thay đổi để lấy tên người dùng từ hệ thống đăng nhập
-        content: newComment,
-        date: new Date().toLocaleString(),
-      };
-      try {
-        const response = await axios.post("http://localhost:5000/api/comments");
-        console.log(response.data);
-      } catch (err) {
-        console.log(err);
-      }
-      setComments([...comments, newCommentObj]); // Cập nhật danh sách bình luận
-      setNewComment(""); // Xóa nội dung sau khi gửi bình luận
+    // Kiểm tra nếu trường bình luận bị trống
+    if (newComment.trim() === "") {
+      console.log("Bình luận không được để trống!");
+      return;
     }
+
+    // Kiểm tra nếu rating nằm trong khoảng hợp lệ (giả sử từ 1 đến 5)
+    if (rating < 1 || rating > 5) {
+      console.log("Rating phải nằm trong khoảng từ 1 đến 5!");
+      return;
+    }
+
+    // Kiểm tra nếu id người dùng hợp lệ
+    if (!username || typeof username !== "string" || username.trim() === "") {
+      console.log("Tên người dùng không hợp lệ!");
+      return;
+    }
+
+    // Kiểm tra nếu id sản phẩm hợp lệ
+    if (!detailMovie.movie_id || typeof detailMovie.movie_id !== "number") {
+      console.log("ID sản phẩm không hợp lệ!");
+      return;
+    }
+
+    // Nếu các kiểm tra thành công, tiếp tục gửi dữ liệu tới backend
+    try {
+      const response = await axios.post("http://localhost:5000/api/comments", {
+        id_nguoi_dung: username,
+        id_san_pham: detailMovie.movie_id,
+        danh_gia: rating,
+        noi_dung: newComment,
+      });
+
+      // Kiểm tra phản hồi từ server
+      if (response.data.EC == 1) {
+        setData_Comment(response.data.DT);
+      }
+    } catch (err) {
+      console.log("Lỗi khi gửi bình luận:", err);
+    }
+
+    // Xóa nội dung sau khi gửi bình luận
+    setNewComment("");
   };
 
   if (isLoading) {
@@ -562,12 +608,27 @@ function DetailMovie(props) {
                 <h4>Comments</h4>
 
                 {/* Hiển thị danh sách bình luận */}
-                <div className="comments-list">
-                  {comments.map((comment, index) => (
+
+                <div className="comments-list scrollable">
+                  {data_Comment.map((comment, index) => (
                     <div key={index} className="comment-item mb-2">
-                      <strong>{comment.username}</strong>
-                      <p>{comment.content}</p>
-                      <small>{comment.date}</small>
+                      {/* Hiển thị số sao */}
+                      <div className="rating">
+                        {Array.from({ length: comment.danh_gia }, (_, i) => (
+                          <span key={i} className="star text-danger">
+                            ★
+                          </span>
+                        ))}
+                      </div>
+                      <strong>{comment.id_nguoi_dung}</strong>{" "}
+                      <span>
+                        {" "}
+                        <strong>|| {comment.ngay_tao} </strong>
+                      </span>
+                      <p>{comment.noi_dung}</p>
+                      <small>
+                        {new Date(comment.ngay_tao).toLocaleDateString()}
+                      </small>
                     </div>
                   ))}
                 </div>
@@ -581,7 +642,24 @@ function DetailMovie(props) {
                     placeholder="Write your comment..."
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                  ></textarea>
+                  ></textarea>{" "}
+                  {/* Khu vực chọn rating */}
+                  <div className="rating-select mt-2">
+                    {/* <span>Select Rating: </span> */}
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <span
+                        key={star}
+                        className="star"
+                        style={{
+                          cursor: "pointer",
+                          color: star <= rating ? "#ffc107" : "#ccc",
+                        }}
+                        onClick={() => setRating(star)}
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
                   <button
                     className="btn btn-primary mt-2"
                     onClick={handleAddComment}
