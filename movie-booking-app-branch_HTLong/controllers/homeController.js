@@ -204,11 +204,24 @@ exports.getBookings = async (req, res) => {
 
 // Thêm đặt vé mới
 exports.addBooking = async (req, res) => {
-  const { bookingInfo, dayOfWeek, chooseSeat, day, seat_price, tiket_booking } =
-    req.body;
+  const {
+    bookingInfo,
+    dayOfWeek,
+    chooseSeat,
+    day,
+    seat_price,
+    tiket_booking,
+    id_movie,
+  } = req.body;
   console.log(req.body);
+
+  // Kiểm tra xem 'day' có giá trị hợp lệ không
+  if (!day) {
+    return res.status(400).json({ error: "Date is required" });
+  }
+
   const sql =
-    "INSERT INTO bookingUser (name, email, phone_number, showtime, payment_method, date, day_of_week, seat_number,price_booking,tiket_booking) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?)";
+    "INSERT INTO bookingUser (name, email, phone_number, showtime, payment_method, date, day_of_week, seat_number, price_booking, tiket_booking) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   try {
     const [results] = await pool.pool.query(sql, [
@@ -217,19 +230,45 @@ exports.addBooking = async (req, res) => {
       bookingInfo.phone,
       bookingInfo.time,
       bookingInfo.payment,
-      day,
+      day, // Đảm bảo rằng giá trị day không phải là chuỗi rỗng
       dayOfWeek,
       chooseSeat,
       seat_price,
       tiket_booking,
     ]);
 
-    res.status(201).json({});
+    // Cập nhật trạng thái ghế
+    const [results_UpdateSeat] = await pool.pool.query(
+      `UPDATE seatv2 SET status = "Đã đặt", id_movie = ? WHERE name = ?`,
+      [id_movie, chooseSeat]
+    );
+
+    // Kiểm tra xem có bản ghi nào đã được cập nhật không
+    if (results_UpdateSeat.affectedRows > 0) {
+      // Nếu UPDATE thành công, có thể thực hiện INSERT (nếu cần)
+      const [results_InsertSeat] = await pool.pool.query(
+        `INSERT INTO seatv2 (name, mota) VALUES (?, ?)`,
+        [chooseSeat, chooseSeat]
+      );
+
+      // Trả về phản hồi thành công
+      res.status(201).json({
+        message: "Booking successful",
+        bookingId: results.insertId, // ID của booking vừa được thêm
+        seatId: results_InsertSeat.insertId, // ID của ghế vừa được thêm (nếu insert thành công)
+      });
+    } else {
+      // Nếu không có bản ghi nào được cập nhật, trả về thông báo
+      res
+        .status(404)
+        .json({ message: "No record found to update seat status." });
+    }
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: err.message });
   }
 };
+
 exports.getTotalRevenue = async (req, res) => {
   try {
     const [TotalRevenue] = await pool.pool.execute(

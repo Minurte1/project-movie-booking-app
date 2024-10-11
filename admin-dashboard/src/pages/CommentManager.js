@@ -8,54 +8,48 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
-
 import axios from "axios";
-const BookingUser = () => {
+
+const CommentManager = () => {
   const [data_Comment, setData_Comment] = useState([]);
+
   useEffect(() => {
     fetchDataComment();
   }, []);
+
+  // Fetch data từ API
   const fetchDataComment = async () => {
     try {
       const response = await axios.get("http://localhost:5000/api/comments");
-      console.log(response.data);
-      setBookingData(response.data);
+      console.log(response.data); // Kiểm tra dữ liệu trả về
+      setData_Comment(response.data); // Đặt dữ liệu vào state
     } catch (error) {
-      console.error("Error fetching movies:", error);
+      console.error("Error fetching comments:", error);
     }
   };
 
   return (
     <>
-      {" "}
-      <h3>Booking User</h3>
+      <h3>User Comments</h3>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Phone Number</TableCell>
-              <TableCell>Showtime</TableCell>
-              <TableCell>Payment Method</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Day of Week</TableCell>
-              <TableCell>Seat Number</TableCell>
+              <TableCell>ID Người Dùng</TableCell>
+              <TableCell>Nội Dung Bình Luận</TableCell>
+              <TableCell>Số Sao</TableCell>
+              <TableCell>Ngày Tạo</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {bookingData.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell>{row.id}</TableCell>
-                <TableCell>{row.name}</TableCell>
-                <TableCell>{row.email}</TableCell>
-                <TableCell>{row.phone_number}</TableCell>
-                <TableCell>{row.showtime}</TableCell>
-                <TableCell>{row.payment_method}</TableCell>
-                <TableCell>{row.date}</TableCell>
-                <TableCell>{row.day_of_week}</TableCell>
-                <TableCell>{row.seat_number}</TableCell>
+            {data_Comment.map((comment) => (
+              <TableRow key={comment.id}>
+                <TableCell>{comment.id_nguoi_dung}</TableCell>
+                <TableCell>{comment.noi_dung}</TableCell>
+                <TableCell>{comment.danh_gia}</TableCell>
+                <TableCell>
+                  {new Date(comment.ngay_tao).toLocaleDateString()}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -65,4 +59,4 @@ const BookingUser = () => {
   );
 };
 
-export default BookingUser;
+export default CommentManager;

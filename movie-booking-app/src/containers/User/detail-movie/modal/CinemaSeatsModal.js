@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Button, Box } from "@mui/material";
 import axios from "axios";
-const CinemaSeatsModal = ({ open, onClose, setChooseSeat }) => {
+const CinemaSeatsModal = ({ open, onClose, setChooseSeat, idMovie }) => {
   const [seatData, setSeatData] = useState([]);
   useEffect(() => {
     fetchSeat();
   }, [open]);
   const fetchSeat = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/seat");
+      const response = await axios.get(
+        `http://localhost:5000/api/seat/id_movie/${idMovie}`
+      );
       console.log(response.data);
       setSeatData(response.data);
     } catch (error) {
@@ -20,6 +22,7 @@ const CinemaSeatsModal = ({ open, onClose, setChooseSeat }) => {
     setChooseSeat(seatId); // Lưu ghế đã chọn
     onClose(); // Đóng modal
   };
+
   const renderSeats = () => {
     const rows = ["A", "B", "C", "D"];
     return rows.map((row) => (
@@ -34,7 +37,8 @@ const CinemaSeatsModal = ({ open, onClose, setChooseSeat }) => {
                 variant="contained"
                 color="primary"
                 style={{ marginRight: "10px", marginBottom: "10px" }}
-                onClick={() => handleSeatClick(seat.name)} // Sử dụng onClick để chọn ghế
+                onClick={() => handleSeatClick(seat.name)}
+                disabled={seat.status === "Đã đặt"} // Disable ghế nếu đã đặt
               >
                 {seat.name}
               </Button>

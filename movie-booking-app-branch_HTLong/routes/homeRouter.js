@@ -26,7 +26,7 @@ router.post("/bookings", homeController.addBooking); // Thêm đặt vé mới
 
 // Lấy danh sách ghế
 router.get("/seat", homeControllerSeatV2.getSeats);
-
+router.get("/seat/id_movie/:id_movie", homeControllerSeatV2.getSeats_ByID);
 // Thêm ghế mới
 router.post("/seat", homeControllerSeatV2.addSeat);
 

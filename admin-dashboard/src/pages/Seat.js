@@ -134,6 +134,8 @@ const SeatManager = () => {
             <TableRow>
               <TableCell>Name</TableCell>
               <TableCell>Description</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Movie_id</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -142,6 +144,8 @@ const SeatManager = () => {
               <TableRow key={seat.id}>
                 <TableCell>{seat.name}</TableCell>
                 <TableCell>{seat.mota}</TableCell>
+                <TableCell>{seat.status}</TableCell>
+                <TableCell>{seat.id_movie}</TableCell>
                 <TableCell>
                   <IconButton onClick={() => openSeatModal(seat)}>
                     <EditIcon />

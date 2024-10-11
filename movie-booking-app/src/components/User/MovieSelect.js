@@ -280,9 +280,9 @@ function MovieSelect(props) {
             <NavLink
               to={{
                 pathname: localStorage.getItem("User")
-                  ? `/checkout/${quickTicket.movie_id}`
+                  ? `/detail-movie/${quickTicket.movie_id}`
                   : `/login`,
-                preRequire: `/checkout/${quickTicket.movie_id}`,
+                preRequire: `/detail-movie/${quickTicket.movie_id}`,
                 prePage: props.history.location.pathname,
               }}
             >

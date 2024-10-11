@@ -259,6 +259,7 @@ function DetailMovie(props) {
               day,
               seat_price: detailMovie.seat_price,
               tiket_booking: detailMovie.title,
+              id_movie: detailMovie.movie_id,
             }
           );
           console.log(response.data);
@@ -814,6 +815,7 @@ function DetailMovie(props) {
                   {chooseSeat ? `${chooseSeat}` : ""}
                 </span>
                 <CinemaSeatsModal
+                  idMovie={detailMovie.movie_id}
                   open={open}
                   setChooseSeat={setChooseSeat}
                   onClose={handleClose}
@@ -846,7 +848,7 @@ function DetailMovie(props) {
                 <>
                   {" "}
                   <Button
-                    onClick={() => handleBookingSubmit()}
+                    onClick={(e) => handleBookingSubmit(e)}
                     className="mt-2"
                     type="submit"
                     style={{

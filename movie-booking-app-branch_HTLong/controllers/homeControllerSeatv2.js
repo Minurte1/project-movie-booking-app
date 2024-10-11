@@ -12,6 +12,20 @@ exports.getSeats = async (req, res) => {
   }
 };
 
+exports.getSeats_ByID = async (req, res) => {
+  const { id_movie } = req.params;
+
+  // Câu lệnh SQL để lấy tất cả dữ liệu mà id_movie = id_movie hoặc id_movie là NULL
+  const sql = "SELECT * FROM seatv2 WHERE id_movie = ? OR id_movie IS NULL";
+
+  try {
+    const [results] = await pool.pool.query(sql, [id_movie]);
+    res.status(200).json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // Thêm ghế mới
 exports.addSeat = async (req, res) => {
   const { name, mota } = req.body;
