@@ -190,7 +190,7 @@ const ListMovie = () => {
               aria-controls="dangchieu"
               aria-selected="true"
             >
-              All movies
+              All shows
             </a>
           </li>
           <li className="nav-item">

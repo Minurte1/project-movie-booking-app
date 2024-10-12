@@ -129,11 +129,11 @@ const MovieManager = () => {
           `http://localhost:5000/api/movies/${editingMovieId}`,
           movieData
         );
-        alert("Movie updated successfully");
+        alert("Show updated successfully");
       } else {
         // Nếu thêm mới
         await axios.post("http://localhost:5000/api/movies", movieData);
-        alert("Movie added successfully");
+        alert("Show added successfully");
       }
 
       // Reset form data
@@ -163,7 +163,7 @@ const MovieManager = () => {
   const handleDelete = async (movieId) => {
     try {
       await axios.delete(`http://localhost:5000/api/movies/${movieId}`);
-      alert("Movie deleted successfully");
+      alert("Show deleted successfully");
       fetchMovies();
     } catch (error) {
       console.error("Error deleting movie:", error);
@@ -178,7 +178,7 @@ const MovieManager = () => {
           color="primary"
           onClick={() => openMovieModal()}
         >
-          Add Movie
+          Add Show
         </Button>
       </Box>
 
@@ -243,7 +243,7 @@ const MovieManager = () => {
         fullWidth
         maxWidth="md"
       >
-        <DialogTitle>{editingMovieId ? "Edit Movie" : "Add Movie"}</DialogTitle>
+        <DialogTitle>{editingMovieId ? "Edit Show" : "Add Show"}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
@@ -345,7 +345,7 @@ const MovieManager = () => {
         <DialogActions>
           <Button onClick={() => setOpenModal(false)}>Cancel</Button>
           <Button onClick={handleSubmit} variant="contained" color="primary">
-            {editingMovieId ? "Update Movie" : "Save Movie"}
+            {editingMovieId ? "Update Show" : "Save Show"}
           </Button>
         </DialogActions>
       </Dialog>
