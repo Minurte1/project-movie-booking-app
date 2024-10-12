@@ -197,7 +197,7 @@ function MovieSelect(props) {
       <div className="home-tool">
         <Paper elevation={3} className={classes.paper}>
           <FormControl className={classes.movie}>
-            <InputLabel id="movie-select-label">Movie</InputLabel>
+            <InputLabel id="movie-select-label">Show</InputLabel>
             <Select
               disableUnderline
               labelId="movie-select-label"

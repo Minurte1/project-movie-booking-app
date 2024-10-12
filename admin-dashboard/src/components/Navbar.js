@@ -37,7 +37,7 @@ const Navbar = () => {
           <ListItemIcon>
             <PeopleIcon />
           </ListItemIcon>
-          <ListItemText primary="Movie" />
+          <ListItemText primary="Show" />
         </ListItem>
         <ListItem button component={Link} to="/admin/seat">
           <ListItemIcon>
