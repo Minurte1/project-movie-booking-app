@@ -1,11 +1,11 @@
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import * as action from "../../../services/redux/actions/movieActions";
 import Movie from "../../../components/User/Movie";
 import Slider from "react-slick";
 import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
 import ArrowForwardIosIcon from "@material-ui/icons/ArrowForwardIos";
-import Snipper from "../../../components/User/Spinner";
+import Spinner from "../../../components/User/Spinner";
 import { NavLink } from "react-router-dom";
 
 function SampleNextArrow(props) {
@@ -25,66 +25,77 @@ function SamplePrevArrow(props) {
     </div>
   );
 }
-class ListMovie extends Component {
-  settings = {
+
+const ListMovie = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const dispatch = useDispatch();
+  const listMovie = useSelector((state) => state.movieReducer.listMovie);
+
+  const settings = {
     arrows: true,
     dots: false,
     infinite: true,
     autoplay: false,
     slidesPerRow: 4,
-    rows: 2,
+    rows: 10,
     responsive: [
       {
         breakpoint: 992,
         settings: {
-          slidesPerRow: 3
-        }
+          slidesPerRow: 3,
+        },
       },
       {
         breakpoint: 768,
         settings: {
           slidesPerRow: 2,
-          arrows: false
-        }
+          arrows: false,
+        },
       },
       {
         breakpoint: 576,
         settings: {
-          slidesPerRow: 2
-        }
-      }
+          slidesPerRow: 2,
+        },
+      },
     ],
     nextArrow: <SampleNextArrow />,
-    prevArrow: <SamplePrevArrow />
-  }
-  componentDidMount() {
-    this.props.getListMovie(); 
-  }
-  renderHTML = reverse => {
-    let { listMovie } = this.props;
+    prevArrow: <SamplePrevArrow />,
+  };
+
+  useEffect(() => {
+    dispatch(action.getListMovieAPI());
+  }, [dispatch]);
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const renderHTML = (reverse) => {
     let upcoming = [];
     const nowShowing = () => {
-      for(let i = 0; i < listMovie.length; i++){
-        if(new Date(listMovie[i].release_date) > new Date()){
+      for (let i = 0; i < listMovie.length; i++) {
+        if (new Date(listMovie[i].release_date) > new Date()) {
           upcoming.push(listMovie[i]);
         }
       }
-      listMovie = upcoming;
-    }
+    };
     if (reverse) {
       listMovie.reverse();
       nowShowing();
-    } 
-    return listMovie.map((item, index) => {
-      return (
-        <div className="slider" key={index}>
-          <Movie key={index} movie={item} />
-        </div>
-      );
-    });
-  }
-  renderListMovieMobile = () => {
-    let { listMovie } = this.props;
+    }
+    const filteredMovies = listMovie.filter((movie) =>
+      movie.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    return filteredMovies.map((item, index) => (
+      <div className="slider" key={index}>
+        <Movie key={index} movie={item} />
+      </div>
+    ));
+  };
+
+  const renderListMovieMobile = () => {
     return (
       <div className="list-movie--mobile">
         <div className="row m-0">
@@ -92,13 +103,13 @@ class ListMovie extends Component {
             if (index > 3) {
               return (
                 <div className="col-6 p-0 movie--more d-none" key={index}>
-                  <NavLink to={`/detail-movie/${movie.moive_id}`}>
+                  <NavLink to={`/detail-movie/${movie.movie_id}`}>
                     <div className="movie">
                       <div className="movie__img">
                         <img
                           alt={movie.title}
                           src={movie.poster}
-                          onError={e => {
+                          onError={(e) => {
                             e.target.onerror = null;
                             e.target.src = "/img/firm-0.webp";
                           }}
@@ -118,7 +129,7 @@ class ListMovie extends Component {
                       <img
                         alt={movie.title}
                         src={movie.poster}
-                        onError={e => {
+                        onError={(e) => {
                           e.target.onerror = null;
                           e.target.src = "/img/firm-0.webp";
                         }}
@@ -135,7 +146,7 @@ class ListMovie extends Component {
     );
   };
 
-  showmore = () => {
+  const showmore = () => {
     let boxs = document.getElementsByClassName("movie--more");
     let btn = document.getElementById("showmore-btn");
     for (let i = 0; i < boxs.length; i++) {
@@ -153,100 +164,87 @@ class ListMovie extends Component {
     }
   };
 
-  render() {
-    let { listMovie } = this.props;
-    if (listMovie.length) {
-      return (
-        <div id="list-movie__wrap" className="list-movie__wrap">
-          <ul
-            className="nav nav-tabs justify-content-center align-items-center"
-            id="listMovieTab"
-            role="tablist"
+  if (listMovie.length) {
+    return (
+      <div id="list-movie__wrap" className="list-movie__wrap">
+        <input
+          type="text"
+          placeholder="Search movies..."
+          value={searchTerm}
+          onChange={handleSearchChange}
+          className="search-input" // Thêm class ở đây
+        />
+
+        <ul
+          className="nav nav-tabs justify-content-center align-items-center"
+          id="listMovieTab"
+          role="tablist"
+        >
+          <li className="nav-item">
+            <a
+              className="nav-link active"
+              id="dangchieu-tab"
+              data-toggle="tab"
+              href="#dangchieu"
+              role="tab"
+              aria-controls="dangchieu"
+              aria-selected="true"
+            >
+              All movies
+            </a>
+          </li>
+          <li className="nav-item">
+            <a
+              className="nav-link"
+              id="sapchieu-tab"
+              data-toggle="tab"
+              href="#sapchieu"
+              role="tab"
+              aria-controls="sapchieu"
+              aria-selected="false"
+            >
+              Upcoming
+            </a>
+          </li>
+        </ul>
+        <div className="tab-content" id="listMovieTabContent">
+          <div
+            className="tab-pane fade show active"
+            id="dangchieu"
+            role="tabpanel"
+            aria-labelledby="dangchieu-tab"
           >
-            <li className="nav-item">
-              <a
-                className="nav-link active"
-                id="dangchieu-tab"
-                data-toggle="tab"
-                href="#dangchieu"
-                role="tab"
-                aria-controls="dangchieu"
-                aria-selected="true"
-              >
-                All movies
-              </a>
-            </li>
-            <li className="nav-item">
-              <a
-                className="nav-link"
-                id="sapchieu-tab"
-                data-toggle="tab"
-                href="#sapchieu"
-                role="tab"
-                aria-controls="sapchieu"
-                aria-selected="false"
-              >
-                Upcoming
-              </a>
-            </li>
-          </ul>
-          <div className="tab-content" id="listMovieTabContent">
-            <div
-              className="tab-pane fade show active"
-              id="dangchieu"
-              role="tabpanel"
-              aria-labelledby="dangchieu-tab"
-            >
-              <Slider className="list-movie" {...this.settings}>
-                {this.renderHTML(false)}
-              </Slider>
-              <div className="list-movie--mobile">
-                {this.renderListMovieMobile()}
-              </div>
-            </div>
-            <div
-              className="tab-pane fade"
-              id="sapchieu"
-              role="tabpanel"
-              aria-labelledby="sapchieu-tab"
-            >
-              <Slider className="list-movie" {...this.settings}>
-                {this.renderHTML(true)}
-              </Slider>
-              <div className="list-movie--mobile">
-                {this.renderListMovieMobile()}
-              </div>
-            </div>
+            <Slider className="list-movie" {...settings}>
+              {renderHTML(false)}
+            </Slider>
+            <div className="list-movie--mobile">{renderListMovieMobile()}</div>
           </div>
-          <div className="showmore">
-            <button
-              id="showmore-btn"
-              className="btn showmore-btn"
-              onClick={this.showmore}
-            >
-              Show more
-            </button>
+          <div
+            className="tab-pane fade"
+            id="sapchieu"
+            role="tabpanel"
+            aria-labelledby="sapchieu-tab"
+          >
+            <Slider className="list-movie" {...settings}>
+              {renderHTML(true)}
+            </Slider>
+            <div className="list-movie--mobile">{renderListMovieMobile()}</div>
           </div>
-          <div className="blank"></div>
         </div>
-      );
-    }
-    return <Snipper />;
+        <div className="showmore">
+          <button
+            id="showmore-btn"
+            className="btn showmore-btn"
+            onClick={showmore}
+          >
+            Show more
+          </button>
+        </div>
+        <div className="blank"></div>
+      </div>
+    );
   }
-}
-
-const mapDispathToProp = dispatch => {
-  return {
-    getListMovie: () => {
-      dispatch(action.getListMovieAPI());
-    }
-  };
+  return <Spinner />;
 };
 
-const mapStateToProps = state => {
-  return {
-    listMovie: state.movieReducer.listMovie
-  };
-};
-
-export default connect(mapStateToProps, mapDispathToProp)(ListMovie);
+export default ListMovie;

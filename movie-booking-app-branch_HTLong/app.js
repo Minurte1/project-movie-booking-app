@@ -518,7 +518,7 @@ app.get("/films", async (req, res) => {
         conn.release(); // Giải phóng kết nối
       }
     } else {
-      const new_films_query = "SELECT * FROM movie LIMIT 8"; // Giới hạn 8 bộ phim mới nhất
+      const new_films_query = "SELECT * FROM movie "; // Giới hạn 8 bộ phim mới nhất
 
       // Lấy kết nối từ pool và sử dụng promise
       const conn = await db_conn.pool.getConnection();
